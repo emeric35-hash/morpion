@@ -1,150 +1,253 @@
-/* ==========================================================================
-   1. VARIABLES ET ÉTAT DU JEU
-   ========================================================================== */
-let etatGrille = ["", "", "", "", "", "", "", "", ""];
-let joueurActuel = 1; // 1 = "X", 2 = "O"
-let isTheEnd = false;
-let scoreJoueur1 = 0;
-let scoreJoueur2 = 0;
-let compteurManches = 1;
+/*************************************************************************
+ /*
+ *
+ *
+ *
+ **/
 
-// Combinaisons gagnantes (3x3)
-const combinaisonsGagnantes = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Lignes
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colonnes
-    [0, 4, 8], [2, 4, 6]             // Diagonales
-];
+ /*Modifié par : Hard_Gim
+ Mail : damien.serres@ac-rennes.fr
+ Pour un exercice en BTS SIO :
+ - retrait de l'usage de jQuery
+ Date : 20/10/2025 - MAJ : 12/10/2026
+ *************************************************************************/
+var canvas = document.querySelector("#canvas");
+var context = canvas.getContext("2d");
+var tailleCanvasX = canvas.getAttribute("width");
+var tailleCanvasY = canvas.getAttribute("height");
 
-/* ==========================================================================
-   2. SÉLECTION DES ÉLÉMENTS DU DOM
-   ========================================================================== */
-const cases = document.querySelectorAll(".case");
-const texteStatut = document.getElementById("texte-statut");
-const zoneBoutons = document.getElementById("zone-boutons");
-const elemScoreJ1 = document.getElementById("score-j1");
-const elemScoreJ2 = document.getElementById("score-j2");
-const elemNbManches = document.getElementById("nb-manches");
+var caseSize = Math.min(tailleCanvasX / 3, tailleCanvasY / 3);
+var margin = 25;
 
-/* ==========================================================================
-   3. ÉCOUTEURS D'ÉVÉNEMENT
-   ========================================================================== */
-// On utilise l'index numérique fourni directement par la boucle forEach
-cases.forEach((uneCase, index) => {
-    uneCase.addEventListener("click", () => {
-        jouerCoup(index, uneCase);
-    });
-});
+var isPlayerOne = true;
+var isTheEnd = false;
+var nbCaseFull = 0;
+var isCaseFull = new Array(
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false
+);
+var casesPlayer1 = new Array(0, 0, 0, 0, 0, 0, 0, 0, 0);
+var casesPlayer2 = new Array(0, 0, 0, 0, 0, 0, 0, 0, 0);
+var scorePlayer1 = 0;
+var scorePlayer2 = 0;
+var nbManchesPlayed = 0;
 
-/* ==========================================================================
-   4. LOGIQUE DU JEU
-   ========================================================================== */
-function jouerCoup(index, caseElement) {
-    // Si la partie est finie ou la case occupée, on stoppe l'action
-    if (isTheEnd || etatGrille[index] !== "") return;
-
-    // 1. Déterminer le symbole ("X" ou "O")
-    const symbole = (joueurActuel === 1) ? "X" : "O";
-
-    // 2. Enregistrer le coup
-    etatGrille[index] = symbole;
-    caseElement.textContent = symbole;
-    caseElement.classList.add(symbole.toLowerCase());
-
-    // 3. Vérifier si ce coup gagne ou provoque une égalité
-    if (verifierVictoire()) {
-        theEnd(joueurActuel);
-    } else if (!etatGrille.includes("")) {
-        theEnd(0); // 0 = Égalité
-    } else {
-        // 4. Basculer le joueur (1 -> 2 -> 1)
-        joueurActuel = (joueurActuel === 1) ? 2 : 1;
-        const symboleSuivant = (joueurActuel === 1) ? "X" : "O";
-        texteStatut.innerHTML = `Au tour du <strong>Joueur ${joueurActuel} (${symboleSuivant})</strong>`;
-    }
+function drawGrid() {
+  context.strokeStyle = "#181818";
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(caseSize, margin);
+  context.lineTo(caseSize, 3 * caseSize - margin);
+  context.moveTo(2 * caseSize, margin);
+  context.lineTo(2 * caseSize, 3 * caseSize - margin);
+  context.moveTo(margin, caseSize);
+  context.lineTo(3 * caseSize - margin, caseSize);
+  context.moveTo(margin, 2 * caseSize);
+  context.lineTo(3 * caseSize - margin, 2 * caseSize);
+  context.stroke();
 }
 
-function verifierVictoire() {
-    for (let combo of combinaisonsGagnantes) {
-        const [a, b, c] = combo;
-        if (
-            etatGrille[a] !== "" &&
-            etatGrille[a] === etatGrille[b] &&
-            etatGrille[a] === etatGrille[c]
-        ) {
-            cases[a].classList.add("gagnante");
-            cases[b].classList.add("gagnante");
-            cases[c].classList.add("gagnante");
-            return true;
-        }
-    }
-    return false;
+function drawCross(x, y) {
+  context.strokeStyle = "#00007f";
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(x - caseSize / 2 + margin, y - caseSize / 2 + margin);
+  context.lineTo(x + caseSize / 2 - margin, y + caseSize / 2 - margin);
+  context.moveTo(x - caseSize / 2 + margin, y + caseSize / 2 - margin);
+  context.lineTo(x + caseSize / 2 - margin, y - caseSize / 2 + margin);
+  context.stroke();
 }
 
-/**
- * Fonction theEnd respectant les 7 consignes du projet :
- */
+function drawCircle(x, y) {
+  context.strokeStyle = "#7f0000";
+  context.lineWidth = 3;
+  context.beginPath();
+  context.arc(x, y, caseSize / 2 - margin, 0, 2 * Math.PI, true);
+  context.stroke();
+}
+
+function drawSector(x, y, i) {
+  if (isPlayerOne) {
+    drawCross(x, y);
+    casesPlayer1[i] = 1;
+    isPlayerOne = false;
+    
+    document.getElementById("canvas").classList.add("circle");
+    document.getElementById("canvas").classList.remove("cross");
+
+    document.getElementById("gameMessages").innerHTML =
+      '<span class="player2">C\'est au joueur 2 de jouer.</span>';
+
+    if (casesPlayer1[0] * casesPlayer1[1] * casesPlayer1[2] == 1) theEnd(1);
+    else if (casesPlayer1[3] * casesPlayer1[4] * casesPlayer1[5] == 1)
+      theEnd(1);
+    else if (casesPlayer1[6] * casesPlayer1[7] * casesPlayer1[8] == 1)
+      theEnd(1);
+    else if (casesPlayer1[0] * casesPlayer1[3] * casesPlayer1[6] == 1)
+      theEnd(1);
+    else if (casesPlayer1[1] * casesPlayer1[4] * casesPlayer1[7] == 1)
+      theEnd(1);
+    else if (casesPlayer1[2] * casesPlayer1[5] * casesPlayer1[8] == 1)
+      theEnd(1);
+    else if (casesPlayer1[0] * casesPlayer1[4] * casesPlayer1[8] == 1)
+      theEnd(1);
+    else if (casesPlayer1[2] * casesPlayer1[4] * casesPlayer1[6] == 1)
+      theEnd(1);
+    else if (nbCaseFull == 9) theEnd(0);
+  } else {
+    drawCircle(x, y);
+    casesPlayer2[i] = 1;
+    isPlayerOne = true;
+
+    document.getElementById("canvas").classList.add("cross");
+    document.getElementById("canvas").classList.remove("circle");
+
+    document.getElementById("gameMessages").innerHTML =
+      '<span class="player1">C\'est au joueur 1 de jouer.</span>';
+
+    if (casesPlayer2[0] * casesPlayer2[1] * casesPlayer2[2] == 1) theEnd(2);
+    else if (casesPlayer2[3] * casesPlayer2[4] * casesPlayer2[5] == 1)
+      theEnd(2);
+    else if (casesPlayer2[6] * casesPlayer2[7] * casesPlayer2[8] == 1)
+      theEnd(2);
+    else if (casesPlayer2[0] * casesPlayer2[3] * casesPlayer2[6] == 1)
+      theEnd(2);
+    else if (casesPlayer2[1] * casesPlayer2[4] * casesPlayer2[7] == 1)
+      theEnd(2);
+    else if (casesPlayer2[2] * casesPlayer2[5] * casesPlayer2[8] == 1)
+      theEnd(2);
+    else if (casesPlayer2[0] * casesPlayer2[4] * casesPlayer2[8] == 1)
+      theEnd(2);
+    else if (casesPlayer2[2] * casesPlayer2[4] * casesPlayer2[6] == 1)
+      theEnd(2);
+    else if (nbCaseFull == 9) theEnd(0);
+  }
+}
+
+/*************************************************************************
+Ici pour le code à compléter
+*************************************************************************/
 function theEnd(player) {
-    // 1. Retirer l'aspect cliquable des cases (désactiver le curseur)
-    cases.forEach(c => {
-        c.disabled = true;
-        c.style.cursor = "default";
-    });
 
-    // 2. Changer la valeur de l'attribut/variable isTheEnd
-    isTheEnd = true;
+  document.getElementById("canvas").classList.remove("cross");
+  document.getElementById("canvas").classList.remove("circle");
 
-    // 3. Comptabiliser la manche
-    compteurManches++;
+  isTheEnd = true;
 
-    // 4. Mettre à jour l'élément affichant le nombre de manches
-    elemNbManches.textContent = compteurManches;
+  nbManchesPlayed = nbManchesPlayed + 1;
 
-    // 5. Afficher un message de victoire/égalité et révéler les boutons de relance
-    if (player === 1 || player === 2) {
-        texteStatut.innerHTML = `🏆 <strong>Victoire du Joueur ${player} !</strong>`;
-        
-        // 6. Augmenter le score du joueur gagnant
-        if (player === 1) scoreJoueur1++;
-        if (player === 2) scoreJoueur2++;
-    } else {
-        texteStatut.innerHTML = `🤝 <strong>Égalité !</strong>`;
-    }
+  document.getElementById("nbManches").innerHTML = nbManchesPlayed + " manches";
 
-    // 7. Mettre à jour le score affiché
-    elemScoreJ1.textContent = scoreJoueur1;
-    elemScoreJ2.textContent = scoreJoueur2;
+  document.getElementById("gameMessages").innerHTML =
+    '<strong class="player' + player + '">Le joueur ' + player + ' remporte la manche !</strong>' +
+    '<br><br><button onClick="newMatch()">Nouvelle manche</button>' +
+    '<br><button onClick="newGame()">Nouvelle partie</button>';
 
-    // Afficher les boutons
-    zoneBoutons.style.display = "flex";
+  if (player == 1) {
+    scorePlayer1 = scorePlayer1 + 1;
+    document.getElementById("score1").innerHTML = scorePlayer1 + " pt";
+  } else {
+    scorePlayer2 = scorePlayer2 + 1;
+    document.getElementById("score2").innerHTML = scorePlayer2 + " pt";
+  }
 }
 
-function reinitialiserManche() {
-    etatGrille = ["", "", "", "", "", "", "", "", ""];
-    isTheEnd = false;
-    joueurActuel = 1;
 
-    texteStatut.innerHTML = `Au tour du <strong>Joueur 1 (X)</strong>`;
-    zoneBoutons.style.display = "none";
+function newMatch() {
+  var i = 0;
+  context.clearRect(0, 0, tailleCanvasX, tailleCanvasY);
+  drawGrid();
+  isTheEnd = false;
+  nbCaseFull = 0;
+  for (i = 0; i < 9; i++) {
+    isCaseFull[i] = false;
+    casesPlayer1[i] = 0;
+    casesPlayer2[i] = 0;
+  }
+  if (isPlayerOne) {
 
-    cases.forEach(c => {
-        c.textContent = "";
-        c.className = "case";
-        c.disabled = false;
-        c.style.cursor = "pointer";
-    });
+    document.getElementById("canvas").classList.add("cross");
+    document.getElementById("canvas").classList.remove("circle");
+    document.getElementById("gameMessages").innerHTML =
+      '<span class="player1">C\'est au joueur 1 de jouer.</span>';
+  } else {
+    document.getElementById("canvas").classList.add("circle");
+    document.getElementById("canvas").classList.remove("cross");
+    document.getElementById("gameMessages").innerHTML =
+      '<span class="player2">C\'est au joueur 2 de jouer.</span>';
+  }
 }
 
-function reinitialiserPartie() {
-    scoreJoueur1 = 0;
-    scoreJoueur2 = 0;
-    compteurManches = 1;
-    elemScoreJ1.textContent = 0;
-    elemScoreJ2.textContent = 0;
-    elemNbManches.textContent = 1;
+function newGame() {
+  scorePlayer1 = 0;
 
-    reinitialiserManche();
+  document.getElementById("score1").innerHTML = scorePlayer1 + " pt";
+  scorePlayer2 = 0;
+  document.getElementById("score2").innerHTML = scorePlayer2 + " pt";
+
+  isPlayerOne = true;
+  document.getElementById("canvas").classList.add("cross");
+  document.getElementById("canvas").classList.remove("circle");
+
+  nbManchesPlayed = 0;
+  document.getElementById("nbManches").innerHTML = nbManchesPlayed + " manche";
+
+  newMatch();
 }
 
-// Export des fonctions sur l'objet window pour compatibilité onclick HTML
-window.reinitialiserManche = reinitialiserManche;
-window.reinitialiserPartie = reinitialiserPartie;
+
+drawGrid();
+
+document.getElementById("score1").innerHTML = scorePlayer1 + " pt";
+document.getElementById("score2").innerHTML = scorePlayer2 + " pt";
+document.getElementById("nbManches").innerHTML = nbManchesPlayed + " manche";
+document.getElementById("gameMessages").innerHTML =
+  '<span class="player1">C\'est au joueur 1 de jouer.</span>';
+document.getElementById("canvas").classList.add("cross");
+document.getElementById("canvas").classList.remove("circle");
+
+document.getElementById("canvas").addEventListener("click", function (e) {
+  var x = e.pageX - this.offsetLeft;
+  var y = e.pageY - this.offsetTop;
+  var centerX = 0;
+  var centerY = 0;
+  var col = 0;
+  var row = 0;
+  var index = 0;
+
+  if (x < caseSize) {
+    centerX = caseSize / 2;
+    col = 0;
+  } else if (x < 2 * caseSize) {
+    centerX = (3 * caseSize) / 2;
+    col = 1;
+  } else {
+    centerX = (5 * caseSize) / 2;
+    col = 2;
+  }
+
+  if (y < caseSize) {
+    centerY = caseSize / 2;
+    row = 0;
+  } else if (y < 2 * caseSize) {
+    centerY = (3 * caseSize) / 2;
+    row = 1;
+  } else {
+    centerY = (5 * caseSize) / 2;
+    row = 2;
+  }
+
+  index = col + 3 * row;
+  if (!isCaseFull[index] && !isTheEnd) {
+    isCaseFull[index] = true;
+    nbCaseFull++;
+    drawSector(centerX, centerY, index);
+  }
+});
