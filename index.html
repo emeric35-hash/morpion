@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu du Morpion</title>
+    
+    <!-- Feuille de style externe -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Script JS avec l'attribut defer pour attendre la fin du chargement du HTML -->
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <main class="morpion-container">
+        <h1>Jeu du Morpion</h1>
+
+        <!-- SECTION 1 : TABLEAU DES SCORES ET MANCHES -->
+        <section class="scores-bar">
+            <div class="score-box">
+                <span class="label">Joueur 1 (X)</span>
+                <span id="score-j1" class="valeur">0</span>
+            </div>
+            <div class="score-box">
+                <span class="label">Manche</span>
+                <span id="nb-manches" class="valeur">1</span>
+            </div>
+            <div class="score-box">
+                <span class="label">Joueur 2 (O)</span>
+                <span id="score-j2" class="valeur">0</span>
+            </div>
+        </section>
+
+        <!-- SECTION 2 : ZONE D'INFORMATIONS DU TOUR ET FIN DE PARTIE -->
+        <section id="zone-message" class="zone-message">
+            <p id="texte-statut">Au tour du <strong>Joueur 1 (X)</strong></p>
+            <div id="zone-boutons" class="zone-boutons-action" style="display: none;">
+                <!-- Les boutons s'afficheront en fin de manche -->
+                <button id="btn-nouvelle-manche" onclick="reinitialiserManche()">Nouvelle Manche</button>
+                <button id="btn-nouvelle-partie" onclick="reinitialiserPartie()">Nouvelle Partie</button>
+            </div>
+        </section>
+
+        <!-- SECTION 3 : GRILLE DE JEU (3x3) -->
+        <section id="grille" class="grille-morpion">
+            <!-- Chaque case possède un attribut data-index (0 à 8) pour l'identifier en JS -->
+            <button class="case" data-index="0"></button>
+            <button class="case" data-index="1"></button>
+            <button class="case" data-index="2"></button>
+            <button class="case" data-index="3"></button>
+            <button class="case" data-index="4"></button>
+            <button class="case" data-index="5"></button>
+            <button class="case" data-index="6"></button>
+            <button class="case" data-index="7"></button>
+            <button class="case" data-index="8"></button>
+        </section>
+    </main>
+
+</body>
+</html>

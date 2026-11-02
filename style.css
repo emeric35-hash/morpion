@@ -1,0 +1,158 @@
+/* ==========================================================================
+   1. VARIABLES & REINITIALISATION
+   ========================================================================== */
+:root {
+    --bg-primary: #0f1117;
+    --bg-card: #161922;
+    --bg-case: #1f2330;
+    --accent-gold: #d4af37;
+    --accent-hover: #f3c63f;
+    --text-light: #f3f4f6;
+    --text-muted: #9ca3af;
+    --border-color: #2a2f42;
+    --joueur-x: #60a5fa; /* Bleu */
+    --joueur-o: #f87171; /* Rouge */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.morpion-container {
+    background-color: var(--bg-card);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+h1 {
+    color: var(--accent-gold);
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+/* ==========================================================================
+   2. BARRE DE SCORE
+   ========================================================================== */
+.scores-bar {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.score-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.score-box .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.score-box .valeur {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+}
+
+/* ==========================================================================
+   3. ZONE DE MESSAGE & BOUTONS
+   ========================================================================== */
+.zone-message {
+    min-height: 60px;
+    margin-bottom: 1.5rem;
+}
+
+#texte-statut {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+}
+
+.zone-boutons-action {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.zone-boutons-action button {
+    padding: 0.6rem 1rem;
+    background-color: var(--accent-gold);
+    color: #000;
+}
+
+.zone-boutons-action button:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   4. GRILLE DE JEU (CSS GRID)
+   ========================================================================== */
+.grille-morpion {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.case {
+    aspect-ratio: 1; /* Conserve un format carré */
+    background-color: var(--bg-case);
+    border: 1px solid var(--border-color);
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--text-light);
+    border-radius: 10px;
+}
+
+.case:hover:not(:disabled) {
+    background-color: #2a2f42;
+    border-color: var(--accent-gold);
+}
+
+/* Styles pour identifier X et O */
+.case.x {
+    color: var(--joueur-x);
+}
+
+.case.o {
+    color: var(--joueur-o);
+}
+
+.case:disabled {
+    cursor: not-allowed;
+}
+
+/* Style de surbrillance pour la combinaison gagnante */
+.case.gagnante {
+    background-color: rgba(212, 175, 55, 0.2);
+    border-color: var(--accent-gold);
+}
