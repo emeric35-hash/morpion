@@ -82,3 +82,11 @@ body {
 	float: right;
 	margin-right: 25px;
 }
+
+#canvas.circle {
+	cursor: url('./circle.cur') 50 50, move;
+}
+
+#canvas.cross {
+	cursor: url('./cross.cur') 50 50, crosshair;
+}

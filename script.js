@@ -135,17 +135,20 @@ function drawSector(x, y, i) {
 Ici pour le code à compléter
 *************************************************************************/
 function theEnd(player) {
-
   document.getElementById("canvas").classList.remove("cross");
   document.getElementById("canvas").classList.remove("circle");
 
   isTheEnd = true;
-
   nbManchesPlayed = nbManchesPlayed + 1;
 
-  document.getElementById("nbManches").innerHTML = nbManchesPlayed + " manches";
+  var texteManche = nbManchesPlayed + (nbManchesPlayed > 1 ? " manches" : " manche");
+  document.getElementById("nbManches").innerHTML = texteManche;
 
-  document.getElementById("gameMessages").innerHTML =
+  // Si c'est un joueur qui a gagné (player 1 ou 2), on lance le feu d'artifice !
+  if (player === 1 || player === 2) {
+    createFirework();
+  }
+document.getElementById("gameMessages").innerHTML =
     '<strong class="player' + player + '">Le joueur ' + player + ' remporte la manche !</strong>' +
     '<br><br><button onClick="newMatch()">Nouvelle manche</button>' +
     '<br><button onClick="newGame()">Nouvelle partie</button>';
@@ -251,3 +254,60 @@ document.getElementById("canvas").addEventListener("click", function (e) {
     drawSector(centerX, centerY, index);
   }
 });
+
+// Tableau pour stocker les particules du feu d'artifice
+var fireworksParticles = [];
+
+function createFirework() {
+  fireworksParticles = [];
+  var colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff"];
+  
+  // Génère 80 particules à partir du centre du canvas
+  for (var i = 0; i < 80; i++) {
+    var angle = Math.random() * Math.PI * 2;
+    var speed = Math.random() * 5 + 2;
+    fireworksParticles.push({
+      x: tailleCanvasX / 2,
+      y: tailleCanvasY / 2,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      alpha: 1,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+  
+  animateFirework();
+}
+
+function animateFirework() {
+  if (fireworksParticles.length === 0) return;
+
+  // Effet de traînée légère sans effacer tout le quadrillage
+  context.save();
+  
+  // Met à jour et dessine chaque particule
+  for (var i = fireworksParticles.length - 1; i >= 0; i--) {
+    var p = fireworksParticles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.05; // Gravité
+    p.alpha -= 0.015; // Dissipation
+
+    if (p.alpha <= 0) {
+      fireworksParticles.splice(i, 1);
+      continue;
+    }
+
+    context.globalAlpha = p.alpha;
+    context.fillStyle = p.color;
+    context.beginPath();
+    context.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    context.fill();
+  }
+  
+  context.restore();
+
+  if (fireworksParticles.length > 0) {
+    requestAnimationFrame(animateFirework);
+  }
+}
